@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Quadro de Empenho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; /* Lighter, cooler background */
+            color: #334155;
+        }
+
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Form Elements Refinement */
+        .form-label { 
+            display: block; 
+            font-size: 0.8125rem; /* Slightly smaller, elegant */
+            font-weight: 600; 
+            color: #475569; 
+            margin-bottom: 0.375rem; 
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+        
+        .form-input { 
+            width: 100%; 
+            padding: 0.625rem 0.875rem; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 0.5rem; /* Smoother corners */
+            background-color: #ffffff;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-input:focus { 
+            outline: none; 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); 
+        }
+
+        .form-input:hover:not(:focus) {
+            border-color: #94a3b8;
+        }
+
+        .section-title { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: #0f172a; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 0.75rem; 
+            border-bottom: 2px solid #e2e8f0; 
+            display: flex;
+            align-items: center;
+        }
+
+        /* Preview Document Styles (A4 Simulation) */
+        .preview-wrapper {
+            background-color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            min-height: 100%;
+        }
+
+        .preview-document { 
+            font-family: 'Arial', sans-serif; 
+            color: #000000; 
+            background: #ffffff; 
+            width: 210mm; /* Exact A4 width */
+            min-height: 297mm; /* Exact A4 height */
+            padding: 20mm; /* Standard margins */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            transform-origin: top center;
+        }
+
+        /* Responsive scaling for the document preview on smaller screens */
+        @media (max-width: 1536px) {
+            .preview-document { transform: scale(0.9); margin-bottom: -10%;}
+        }
+        @media (max-width: 1280px) {
+            .preview-document { transform: scale(1); margin-bottom: 0;}
+        }
+        @media (max-width: 1024px) {
+            .preview-document { transform: scale(0.85); margin-bottom: -15%; }
+        }
+        @media (max-width: 768px) {
+            .preview-document { transform: scale(0.65); margin-bottom: -35%; }
+            .preview-wrapper { padding: 1rem 0; }
+        }
+        @media (max-width: 480px) {
+            .preview-document { transform: scale(0.45); margin-bottom: -55%; }
+        }
+
+        .preview-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 1.5rem; 
+            font-size: 11px; 
+            line-height: 1.4; 
+        }
+        
+        .preview-table th, .preview-table td { 
+            border: 1px solid #000; 
+            padding: 6px 8px; 
+            vertical-align: middle; 
+            word-break: break-word; 
+        }
+        
+        .preview-table th { 
+            background-color: #f1f5f9; 
+            text-align: center; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        
+        .preview-label { 
+            font-weight: bold; 
+            width: 30%; 
+        }
+
+        .no-border-side { border-left: none !important; border-right: none !important; }
+        .no-border-top { border-top: none !important; }
+        .no-border-bottom { border-bottom: none !important; }
+
+        /* Item Row Animation */
+        .item-row {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Gerador de Quadro de Empenho</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Botão de Toggle do Preview (Agora visível em todas as telas) -->
+                <button id="previewToggleBtn" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span id="previewToggleText">Mostrar Preview</span>
+                </button>
+                
+                <button type="button" onclick="gerarPDF()" class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md transition-all active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Exportar PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-[1920px] mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="flex flex-col xl:flex-row gap-8 relative justify-center">
+            
+            <!-- Left Column: Form -->
+            <div id="formSection" class="w-full max-w-4xl mx-auto flex flex-col gap-6 transition-all duration-500 ease-in-out">
+                
+                <form id="empenhoForm" class="space-y-6">
+                    
+                    <!-- Form Card: Informações Básicas -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Informações Básicas
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-5">
+                            <div>
+                                <label class="form-label" for="objetoDespesa">OBJETO DA DESPESA:</label>
+                                <textarea id="objetoDespesa" rows="3" class="form-input resize-y" required>Projeto para o gerenciamento administrativo e financeiro, através da descentralização de recursos financeiros pelo Ministério do Desenvolvimento e Assistência Social, Família e Combate à Fome- MDS, para prestar apoio técnico- científico ao Projeto Colaboração Técnica de apoio à pesquisa, ensino, extensão e inovação para executar ações integradas de inclusão produtiva, formação cultural, comunicação social e desenvolvimento territorial sustentável.</textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="form-label" for="empresa">EMPRESA:</label>
+                                    <input type="text" id="empresa" class="form-input" value="Fundação Cultural e de Fomento à Pesquisa, Ensino, Extensão e Inovação - Fadex." required>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="cnpj">CNJP / CPF / UG:</label>
+                                    <input type="text" id="cnpj" class="form-input" value="07.501.328/0001-30" required>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="unidade">UNIDADE (UGR):</label>
+                                    <input type="text" id="unidade" class="form-input" value="158128" placeholder="Ex: Reitoria/Campus Avançado" required>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="processo">PROCESSO ORIGEM:</label>
+                                    <input type="text" id="processo" class="form-input" value="23249.032747.2026-67" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" for="projetoEstrategico">PROJETO ESTRATÉGICO:</label>
+                                <input type="text" id="projetoEstrategico" class="form-input" value="" placeholder="Opcional">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Card: Licitação e Contrato -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Licitação e Contrato
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-5">
+                                <div>
+                                    <label class="form-label" for="uasg">UASG DA LICITAÇÃO:</label>
+                                    <input type="text" id="uasg" class="form-input" value="158128">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="atoNormativo">ATO NORMATIVO Nº:</label>
+                                    <input type="text" id="atoNormativo" class="form-input" value="" placeholder="lei, decreto, etc">
+                                </div>
+                                
+                                <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                                    <div>
+                                        <label class="form-label" for="modalidade">MODALIDADE DA LICITAÇÃO:</label>
+                                        <div class="relative">
+                                            <select id="modalidade" class="form-input appearance-none pr-10 bg-slate-50 cursor-pointer">
+                                                <option value="Dispensa de licitação" selected>Dispensa de licitação</option>
+                                                <option value="Inexigibilidade">Inexigibilidade</option>
+                                                <option value="Pregão Eletrônico">Pregão Eletrônico</option>
+                                                <option value="Pregão Eletrônico SRP">Pregão Eletrônico SRP</option>
+                                                <option value="Concorrência">Concorrência</option>
+                                            </select>
+                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="form-label" for="artigo">ARTIGO:</label>
+                                            <input type="text" id="artigo" class="form-input" value="Art. 72 e 75">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="paragrafo">PARÁGRAFO:</label>
+                                            <input type="text" id="paragrafo" class="form-input" value="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5 pb-2 border-b border-slate-100">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="form-label" for="inciso">INCISO:</label>
+                                            <input type="text" id="inciso" class="form-input" value="XV">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="alinea">ALÍNEA:</label>
+                                            <input type="text" id="alinea" class="form-input" value="">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                         <div>
+                                            <label class="form-label" for="numLicitacao">Nº LICITAÇÃO:</label>
+                                            <input type="text" id="numLicitacao" class="form-input" value="133/2026">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="numContrato">Nº CONTRATO:</label>
+                                            <input type="text" id="numContrato" class="form-input" value="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label" for="qtdeMeses">MESES A EMPENHAR:</label>
+                                    <input type="text" id="qtdeMeses" class="form-input" value="" placeholder="Ex: 12">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="vigencia">VIGÊNCIA CONTRATO:</label>
+                                    <input type="text" id="vigencia" class="form-input" value="" placeholder="Ex: 12/2026">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Card: Itens -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                                Itens Executados
+                            </h2>
+                            <button type="button" onclick="adicionarItem()" class="inline-flex items-center text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                Adicionar
+                            </button>
+                        </div>
+                        
+                        <div id="itensContainer" class="p-6 space-y-6 bg-slate-50/50">
+                            <!-- Initial Item -->
+                            <div class="item-row bg-white p-5 border border-slate-200 rounded-lg shadow-sm relative group">
+                                <button type="button" onclick="removerItem(this)" class="absolute -top-3 -right-3 bg-red-100 text-red-600 rounded-full p-1.5 hover:bg-red-200 shadow-sm transition-all opacity-0 group-hover:opacity-100 md:opacity-100" title="Remover item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                </button>
+                                
+                                <div class="grid grid-cols-12 gap-4">
+                                    <div class="col-span-12 sm:col-span-3 lg:col-span-2">
+                                        <label class="form-label">Nº Item</label>
+                                        <input type="text" class="form-input item-num-licitacao text-center bg-slate-100 text-slate-500 cursor-not-allowed" value="1" readonly>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-9 lg:col-span-10">
+                                        <label class="form-label">Descrição</label>
+                                        <input type="text" class="form-input item-descricao" value="Projeto Colaboração Técnica de apoio à pesquisa..." required>
+                                    </div>
+                                    
+                                    <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                                        <label class="form-label">UN</label>
+                                        <input type="text" class="form-input item-und text-center uppercase" value="" placeholder="Ex: UN, SV" required>
+                                    </div>
+                                    <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                                        <label class="form-label">Qtd</label>
+                                        <input type="number" class="form-input item-qtde text-center" value="1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-4 lg:col-span-4">
+                                        <label class="form-label">V. Unitário (R$)</label>
+                                        <input type="number" class="form-input item-v-unit font-mono" value="1050000.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-12 lg:col-span-4">
+                                        <label class="form-label">V. Total (R$)</label>
+                                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="1.050.000,00" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Export Button (Duplicates header button for ease of use at bottom) -->
+                    <button type="button" onclick="gerarPDF()" class="xl:hidden w-full flex items-center justify-center px-5 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 focus:outline-none shadow-md transition-all active:scale-95 mb-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Gerar e Baixar PDF
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- Right Column: Live Document Preview -->
+            <div id="previewSection" class="hidden w-full xl:w-7/12 2xl:w-2/3 xl:sticky xl:top-24 h-[calc(100vh-8rem)] transition-all duration-500 ease-in-out z-20">
+                <div class="h-full border border-slate-300 rounded-xl overflow-hidden shadow-inner bg-slate-200/50">
+                    
+                    <div class="bg-slate-200 px-4 py-2 border-b border-slate-300 flex justify-between items-center text-xs text-slate-500 font-medium">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Live Preview
+                        </div>
+                        <span>Formato A4</span>
+                        <!-- Close button for mobile preview -->
+                        <button id="closePreviewBtn" class="xl:hidden p-1 hover:bg-slate-300 rounded text-slate-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+
+                    <!-- Scrollable Area for the Document -->
+                    <div class="preview-wrapper overflow-y-auto h-[calc(100%-2.5rem)] custom-scrollbar">
+                        <!-- The A4 Document -->
+                        <div class="preview-document">
+                            
+                            <!-- Document Header (Optional, but adds realism) -->
+                            <div class="text-center mb-8">
+                                <h1 class="text-lg font-bold uppercase tracking-wider mb-1">Quadro de Empenho</h1>
+                                <div class="h-0.5 bg-black w-24 mx-auto mb-2"></div>
+                            </div>
+
+                            <!-- Tabela 1: Informações Básicas -->
+                            <table class="preview-table">
+                                <tr>
+                                    <th colspan="2" class="text-sm py-2">INFORMAÇÕES PARA EMPENHO</th>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">OBJETO DA DESPESA:</td>
+                                    <td id="prev-objeto" class="text-justify"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">EMPRESA:</td>
+                                    <td id="prev-empresa"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">CNJP / CPF / UG:</td>
+                                    <td id="prev-cnpj"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">UNIDADE (UGR)<br><span class="font-normal text-xs">(Reitoria/Campus Avançado):</span></td>
+                                    <td id="prev-unidade"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">PROCESSO ORIGEM:</td>
+                                    <td id="prev-processo"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">PROJETO ESTRATÉGICO:</td>
+                                    <td id="prev-projeto"></td>
+                                </tr>
+                            </table>
+
+                            <!-- Spacer -->
+                            <div style="height: 20px;"></div>
+
+                            <!-- Tabela 2: Licitação -->
+                            <table class="preview-table">
+                                <tr>
+                                    <th colspan="4" class="text-sm py-2">LICITAÇÃO E CONTRATO</th>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label" style="width: 25%;">UASG DA LICITAÇÃO:</td>
+                                    <td id="prev-uasg" style="width: 25%;"></td>
+                                    <td class="preview-label" style="width: 25%;">ATO NORMATIVO Nº<br><span class="font-normal text-[9px]">(lei,decreto,etc):</span></td>
+                                    <td id="prev-ato" style="width: 25%;"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="no-border-side no-border-top"></td>
+                                    <td class="preview-label">ARTIGO:</td>
+                                    <td id="prev-artigo"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label" rowspan="2">MODALIDADE DA LICITAÇÃO:</td>
+                                    <td id="prev-modalidade" rowspan="2" class="font-semibold text-center"></td>
+                                    <td class="preview-label">PARÁGRAFO:</td>
+                                    <td id="prev-paragrafo"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">INCISO:</td>
+                                    <td id="prev-inciso"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="no-border-side no-border-bottom"></td>
+                                    <td class="preview-label">ALÍNEA:</td>
+                                    <td id="prev-alinea"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">Nº DA LICITAÇÃO:</td>
+                                    <td id="prev-numLicitacao"></td>
+                                    <td class="preview-label">Nº DO CONTRATO:</td>
+                                    <td id="prev-numContrato"></td>
+                                </tr>
+                                <tr>
+                                    <td class="preview-label">QTDE MESES A EMPENHAR:</td>
+                                    <td id="prev-qtdeMeses"></td>
+                                    <td class="preview-label">VIGÊNCIA DO CONTRATO:</td>
+                                    <td id="prev-vigencia"></td>
+                                </tr>
+                            </table>
+
+                            <!-- Spacer -->
+                            <div style="height: 20px;"></div>
+
+                            <!-- Tabela 3: Itens -->
+                            <table class="preview-table">
+                                <thead>
+                                    <tr>
+                                        <th colspan="6" class="text-sm py-2">ITENS A SEREM EXECUTADOS</th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 10%;">Nº DO ITEM<br>LICITAÇÃO</th>
+                                        <th style="width: 45%;">DESCRIÇÃO DO ITEM</th>
+                                        <th style="width: 8%;">UND*</th>
+                                        <th style="width: 10%;">QTDE DO<br>ITEM</th>
+                                        <th style="width: 13%;">V. UNITÁRIO<br>(R$)</th>
+                                        <th style="width: 14%;">V. TOTAL<br>(R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prev-itens-tbody">
+                                    <!-- Dynamic Rows go here -->
+                                </tbody>
+                            </table>
+                            
+                            <!-- Footer -->
+                            <div class="mt-8 flex justify-end text-[10px] text-gray-500 font-sans">
+                                <div>Página 1 de 1</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <script>
+        // --- UI Feedback (Toast Notifications) ---
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-[100] transition-all transform translate-y-10 opacity-0 flex items-center gap-2 ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            
+            // Icon based on type
+            const iconSvg = isError 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                
+            toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Preview Toggle Logic ---
+        const previewToggleBtn = document.getElementById('previewToggleBtn');
+        const previewToggleText = document.getElementById('previewToggleText');
+        const closePreviewBtn = document.getElementById('closePreviewBtn');
+        const previewSection = document.getElementById('previewSection');
+        const formSection = document.getElementById('formSection');
+
+        let isPreviewVisible = false;
+
+        function updatePreviewState() {
+            if (isPreviewVisible) {
+                previewToggleText.innerText = "Ocultar Preview";
+                if (window.innerWidth < 1280) { // xl breakpoint
+                    // Layout Mobile: Fullscreen Modal
+                    previewSection.classList.remove('hidden');
+                    previewSection.classList.add('fixed', 'inset-0', 'bg-slate-800/90', 'z-50', 'p-4', 'flex', 'flex-col');
+                    formSection.classList.add('hidden');
+                    document.body.style.overflow = 'hidden'; // Evitar scroll no fundo
+                } else {
+                    // Layout Desktop: Lado a Lado
+                    previewSection.classList.remove('hidden', 'fixed', 'inset-0', 'bg-slate-800/90', 'z-50', 'p-4', 'flex', 'flex-col');
+                    previewSection.classList.add('block');
+                    
+                    formSection.classList.remove('hidden', 'max-w-4xl', 'mx-auto');
+                    formSection.classList.add('xl:w-5/12', '2xl:w-1/3');
+                    document.body.style.overflow = 'auto';
+                }
+            } else {
+                previewToggleText.innerText = "Mostrar Preview";
+                previewSection.classList.add('hidden');
+                previewSection.classList.remove('block', 'fixed', 'inset-0', 'bg-slate-800/90', 'z-50', 'p-4', 'flex', 'flex-col');
+                
+                // Voltar formulário para o centro ampliado
+                formSection.classList.remove('hidden', 'xl:w-5/12', '2xl:w-1/3');
+                formSection.classList.add('max-w-4xl', 'mx-auto');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function togglePreview() {
+            isPreviewVisible = !isPreviewVisible;
+            updatePreviewState();
+        }
+
+        previewToggleBtn.addEventListener('click', togglePreview);
+        
+        closePreviewBtn.addEventListener('click', () => {
+            isPreviewVisible = false;
+            updatePreviewState();
+        });
+
+        // Atualizar classes se a tela for redimensionada para manter a consistência do layout
+        window.addEventListener('resize', () => {
+            if(isPreviewVisible) {
+                updatePreviewState();
+            }
+        });
+
+
+        // --- Form Logic & Live Preview Synchronization ---
+
+        // Currency formatters
+        function formatarMoeda(valor) {
+            return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Calculate single row total
+        function calcularTotal(element) {
+            const row = element.closest('.item-row');
+            const qtde = parseInt(row.querySelector('.item-qtde').value, 10) || 0; // Transformado para Inteiro
+            const vUnit = parseFloat(row.querySelector('.item-v-unit').value) || 0;
+            const total = qtde * vUnit;
+            row.querySelector('.item-v-total').value = formatarMoeda(total);
+            atualizarPreview(); // Trigger preview update immediately
+        }
+
+        // Add new item row
+        function adicionarItem() {
+            const container = document.getElementById('itensContainer');
+            const rowCount = document.querySelectorAll('.item-row').length + 1;
+            const newRow = document.createElement('div');
+            
+            // Add animation classes
+            newRow.className = 'item-row bg-white p-5 border border-slate-200 rounded-lg shadow-sm relative group opacity-0 transform translate-y-4';
+            
+            newRow.innerHTML = `
+                <button type="button" onclick="removerItem(this)" class="absolute -top-3 -right-3 bg-red-100 text-red-600 rounded-full p-1.5 hover:bg-red-200 shadow-sm transition-all opacity-0 group-hover:opacity-100 md:opacity-100" title="Remover item">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-12 sm:col-span-3 lg:col-span-2">
+                        <label class="form-label">Nº Item</label>
+                        <input type="text" class="form-input item-num-licitacao text-center bg-slate-100 text-slate-500 cursor-not-allowed" value="${rowCount}" readonly>
+                    </div>
+                    <div class="col-span-12 sm:col-span-9 lg:col-span-10">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" class="form-input item-descricao" value="" placeholder="Descreva o item..." required>
+                    </div>
+                    
+                    <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                        <label class="form-label">UN</label>
+                        <input type="text" class="form-input item-und text-center uppercase" value="" placeholder="Ex: UN, SV" required>
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                        <label class="form-label">Qtd</label>
+                        <input type="number" class="form-input item-qtde text-center" value="1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                    </div>
+                    <div class="col-span-12 sm:col-span-4 lg:col-span-4">
+                        <label class="form-label">V. Unitário (R$)</label>
+                        <input type="number" class="form-input item-v-unit font-mono" value="0.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                    </div>
+                    <div class="col-span-12 sm:col-span-12 lg:col-span-4">
+                        <label class="form-label">V. Total (R$)</label>
+                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="0,00" readonly>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newRow);
+            
+            // Trigger reflow for animation
+            void newRow.offsetWidth;
+            newRow.classList.remove('opacity-0', 'translate-y-4');
+            
+            atualizarPreview();
+        }
+
+        // Remove item row
+        function removerItem(button) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                const rowToRemove = button.closest('.item-row');
+                // Animation out
+                rowToRemove.style.opacity = '0';
+                rowToRemove.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    rowToRemove.remove();
+                    atualizarNumerosItens();
+                    atualizarPreview();
+                }, 300);
+            } else {
+                showToast("O quadro de empenho precisa ter pelo menos um item.", true);
+            }
+        }
+
+        // Reorganiza a numeração de todos os itens em ordem sequencial
+        function atualizarNumerosItens() {
+            const itemRows = document.querySelectorAll('.item-row');
+            itemRows.forEach((row, index) => {
+                row.querySelector('.item-num-licitacao').value = index + 1;
+            });
+        }
+
+        // Core syncing function
+        function atualizarPreview() {
+            // Mapping [Input ID, Preview ID]
+            const idMap = [
+                ['objetoDespesa', 'prev-objeto'], ['empresa', 'prev-empresa'], ['cnpj', 'prev-cnpj'],
+                ['unidade', 'prev-unidade'], ['processo', 'prev-processo'], ['projetoEstrategico', 'prev-projeto'],
+                ['uasg', 'prev-uasg'], ['atoNormativo', 'prev-ato'], ['artigo', 'prev-artigo'],
+                ['modalidade', 'prev-modalidade'], ['paragrafo', 'prev-paragrafo'], ['inciso', 'prev-inciso'],
+                ['alinea', 'prev-alinea'], ['numLicitacao', 'prev-numLicitacao'], ['numContrato', 'prev-numContrato'],
+                ['qtdeMeses', 'prev-qtdeMeses'], ['vigencia', 'prev-vigencia']
+            ];
+
+            // Sync basic text fields
+            idMap.forEach(([inputId, previewId]) => {
+                const inputEl = document.getElementById(inputId);
+                const prevEl = document.getElementById(previewId);
+                if (inputEl && prevEl) {
+                    prevEl.innerText = inputEl.value;
+                }
+            });
+
+            // Sync Items Table
+            const tbody = document.getElementById('prev-itens-tbody');
+            tbody.innerHTML = ''; 
+            
+            let totalGeral = 0;
+
+            const itemRows = document.querySelectorAll('.item-row');
+            itemRows.forEach(row => {
+                const num = row.querySelector('.item-num-licitacao').value;
+                const desc = row.querySelector('.item-descricao').value;
+                const und = row.querySelector('.item-und').value;
+                const qtde = row.querySelector('.item-qtde').value;
+                
+                const valUnitRaw = parseFloat(row.querySelector('.item-v-unit').value) || 0;
+                const valTotalRaw = valUnitRaw * parseInt(qtde || 0, 10); // Transformado para Inteiro no Preview
+                totalGeral += valTotalRaw;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center">${num}</td>
+                    <td>${desc}</td>
+                    <td class="text-center">${und}</td>
+                    <td class="text-center">${qtde}</td>
+                    <td class="text-right whitespace-nowrap">R$ ${formatarMoeda(valUnitRaw)}</td>
+                    <td class="text-right whitespace-nowrap font-medium">R$ ${formatarMoeda(valTotalRaw)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Add Total Row
+            if(itemRows.length > 0) {
+                 const trTotal = document.createElement('tr');
+                 trTotal.innerHTML = `
+                    <td colspan="5" class="text-right font-bold py-2 bg-slate-50">VALOR TOTAL GERAL:</td>
+                    <td class="text-right whitespace-nowrap font-bold bg-slate-50">R$ ${formatarMoeda(totalGeral)}</td>
+                 `;
+                 tbody.appendChild(trTotal);
+            }
+        }
+
+        // Setup Event Listeners for Live Sync
+        document.getElementById('empenhoForm').addEventListener('input', atualizarPreview);
+        // Initial sync on load
+        window.addEventListener('DOMContentLoaded', atualizarPreview);
+
+
+        // --- PDF Generation Logic ---
+        function gerarPDF() {
+            // Visual feedback on button
+            const btn = document.activeElement;
+            const originalText = btn.innerHTML;
+            if(btn.tagName === 'BUTTON') {
+                btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gerando...';
+            }
+
+            setTimeout(() => {
+                try {
+                    const data = {
+                        objeto: document.getElementById('objetoDespesa').value,
+                        empresa: document.getElementById('empresa').value,
+                        cnpj: document.getElementById('cnpj').value,
+                        unidade: document.getElementById('unidade').value,
+                        processo: document.getElementById('processo').value,
+                        projeto: document.getElementById('projetoEstrategico').value,
+                        uasg: document.getElementById('uasg').value,
+                        atoNormativo: document.getElementById('atoNormativo').value,
+                        artigo: document.getElementById('artigo').value,
+                        paragrafo: document.getElementById('paragrafo').value,
+                        modalidade: document.getElementById('modalidade').value,
+                        inciso: document.getElementById('inciso').value,
+                        alinea: document.getElementById('alinea').value,
+                        numLicitacao: document.getElementById('numLicitacao').value,
+                        numContrato: document.getElementById('numContrato').value,
+                        qtdeMeses: document.getElementById('qtdeMeses').value,
+                        vigencia: document.getElementById('vigencia').value
+                    };
+
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('portrait', 'pt', 'a4');
+                    
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const margin = 40;
+
+                    // Global Table Styles
+                    const tableStyles = {
+                        theme: 'grid',
+                        styles: { 
+                            font: 'helvetica', 
+                            fontSize: 10,
+                            textColor: [0, 0, 0],
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.5,
+                            cellPadding: 5,
+                            valign: 'middle'
+                        },
+                        headStyles: {
+                            fillColor: [240, 240, 240],
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold',
+                            halign: 'center'
+                        }
+                    };
+
+                    // Header
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('QUADRO DE EMPENHO', pageWidth / 2, margin, { align: 'center' });
+                    doc.setLineWidth(1);
+                    doc.line(pageWidth/2 - 70, margin + 5, pageWidth/2 + 70, margin + 5);
+
+                    // Table 1: Informações
+                    const bodyInfo = [
+                        [{ content: 'INFORMAÇÕES PARA EMPENHO', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }],
+                        [{ content: 'OBJETO DA DESPESA:', styles: { fontStyle: 'bold', cellWidth: 120 } }, { content: data.objeto, colSpan: 3 }],
+                        [{ content: 'EMPRESA:', styles: { fontStyle: 'bold' } }, { content: data.empresa, colSpan: 3 }],
+                        [{ content: 'CNJP / CPF / UG:', styles: { fontStyle: 'bold' } }, { content: data.cnpj, colSpan: 3 }],
+                        [{ content: 'UNIDADE (UGR)\n(Reitoria/Campus Avançado):', styles: { fontStyle: 'bold' } }, { content: data.unidade, colSpan: 3 }],
+                        [{ content: 'PROCESSO ORIGEM:', styles: { fontStyle: 'bold' } }, { content: data.processo, colSpan: 3 }],
+                        [{ content: 'PROJETO ESTRATÉGICO:', styles: { fontStyle: 'bold' } }, { content: data.projeto, colSpan: 3 }]
+                    ];
+
+                    doc.autoTable({
+                        startY: margin + 20,
+                        body: bodyInfo,
+                        ...tableStyles
+                    });
+
+                    // Table 2: Licitação
+                    const bodyLicitacao = [
+                        [{ content: 'LICITAÇÃO E CONTRATO', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }],
+                        
+                        [{ content: 'UASG DA LICITAÇÃO:', styles: { fontStyle: 'bold', cellWidth: 120 } }, 
+                         { content: data.uasg, cellWidth: 140 }, 
+                         { content: 'ATO NORMATIVO Nº\n(lei,decreto,etc):', styles: { fontStyle: 'bold', cellWidth: 120 } }, 
+                         { content: data.atoNormativo }],
+                        
+                        // Row to simulate blank left side
+                        [{ content: '', colSpan: 2, styles: {lineWidth: 0, border: {top:0, bottom:0, left:0.5, right:0}} }, 
+                         { content: 'ARTIGO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.artigo }],
+                        
+                        [{ content: 'MODALIDADE DA LICITAÇÃO:', rowSpan: 2, styles: { fontStyle: 'bold', valign: 'middle' } }, 
+                         { content: data.modalidade, rowSpan: 2, styles: { valign: 'middle', halign: 'center', fontStyle: 'bold' } }, 
+                         { content: 'PARÁGRAFO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.paragrafo }],
+                        
+                        [{ content: 'INCISO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.inciso }],
+                        
+                        // Row to simulate blank left side
+                        [{ content: '', colSpan: 2, styles: {lineWidth: 0, border: {top:0, bottom:0, left:0.5, right:0}} }, 
+                         { content: 'ALÍNEA:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.alinea }],
+                        
+                        [{ content: 'Nº DA LICITAÇÃO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.numLicitacao }, 
+                         { content: 'Nº DO CONTRATO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.numContrato }],
+                        
+                        [{ content: 'QTDE DE MESES A EMPENHAR:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.qtdeMeses }, 
+                         { content: 'VIGÊNCIA DO CONTRATO:', styles: { fontStyle: 'bold' } }, 
+                         { content: data.vigencia }]
+                    ];
+
+                    doc.autoTable({
+                        startY: doc.lastAutoTable.finalY + 20, // 20px spacing
+                        body: bodyLicitacao,
+                        ...tableStyles,
+                        didParseCell: function (data) {
+                            // Logic for the specific rows in template that don't have internal borders on left
+                            if(data.section === 'body') {
+                                if((data.row.index === 2 || data.row.index === 5) && data.column.index === 0) {
+                                    // Remove top/bottom/right borders, keep left
+                                    data.cell.styles.lineWidth = 0;
+                                    data.cell.styles.border = {left: 0.5};
+                                }
+                            }
+                        }
+                    });
+
+                    // Collect Items Data
+                    const itemRowsDOM = document.querySelectorAll('.item-row');
+                    const itemsData = [];
+                    let totalVal = 0;
+
+                    itemRowsDOM.forEach(row => {
+                        const q = row.querySelector('.item-qtde').value;
+                        const vu = parseFloat(row.querySelector('.item-v-unit').value) || 0;
+                        const vt = (vu * parseInt(q || 0, 10)); // Transformado para Inteiro no Gerador PDF
+                        totalVal += vt;
+
+                        itemsData.push([
+                            row.querySelector('.item-num-licitacao').value,
+                            row.querySelector('.item-descricao').value,
+                            row.querySelector('.item-und').value,
+                            q,
+                            'R$ ' + formatarMoeda(vu),
+                            'R$ ' + formatarMoeda(vt)
+                        ]);
+                    });
+                    
+                    // Add total row at the end
+                    itemsData.push([
+                        { content: 'TOTAL GERAL:', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', fillColor: [250,250,250] } },
+                        { content: 'R$ ' + formatarMoeda(totalVal), styles: { fontStyle: 'bold', fillColor: [250,250,250] } }
+                    ]);
+
+                    // Table 3: Itens
+                    doc.autoTable({
+                        startY: doc.lastAutoTable.finalY + 20, // 20px spacing
+                        head: [
+                            [{ content: 'ITENS A SEREM EXECUTADOS', colSpan: 6 }],
+                            ['Nº ITEM', 'DESCRIÇÃO DO ITEM', 'UND*', 'QTDE', 'V. UNITÁRIO', 'V. TOTAL']
+                        ],
+                        body: itemsData,
+                        ...tableStyles,
+                        styles: { ...tableStyles.styles, fontSize: 9 }, // Slightly smaller font for items
+                        columnStyles: {
+                            0: { cellWidth: 40, halign: 'center' },
+                            1: { cellWidth: 'auto' }, 
+                            2: { cellWidth: 35, halign: 'center' },
+                            3: { cellWidth: 40, halign: 'center' },
+                            4: { cellWidth: 70, halign: 'right' },
+                            5: { cellWidth: 75, halign: 'right' }
+                        }
+                    });
+
+                    // Add page numbers footer
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(8);
+                        doc.setTextColor(100);
+                        doc.text(
+                            'Página ' + i + ' de ' + pageCount, 
+                            pageWidth - margin, 
+                            doc.internal.pageSize.getHeight() - 20, 
+                            { align: 'right' }
+                        );
+                    }
+
+                    doc.save(`Quadro_Empenho_${document.getElementById('processo').value.replace(/[^a-zA-Z0-9]/g, '') || 'Novo'}.pdf`);
+                    showToast("PDF gerado com sucesso!", false);
+                } catch (e) {
+                    console.error("Erro ao gerar PDF:", e);
+                    showToast("Ocorreu um erro ao gerar o arquivo PDF.", true);
+                } finally {
+                    if(btn.tagName === 'BUTTON') {
+                        btn.innerHTML = originalText;
+                    }
+                }
+            }, 500); // Small delay to allow UI to show loading state
+        }
+    </script>
+</body>
+</html>
