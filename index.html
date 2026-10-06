@@ -197,30 +197,34 @@
                         <div class="p-6 space-y-5">
                             <div>
                                 <label class="form-label" for="objetoDespesa">OBJETO DA DESPESA:</label>
-                                <textarea id="objetoDespesa" rows="3" class="form-input resize-y" required>Projeto para o gerenciamento administrativo e financeiro, através da descentralização de recursos financeiros pelo Ministério do Desenvolvimento e Assistência Social, Família e Combate à Fome- MDS, para prestar apoio técnico- científico ao Projeto Colaboração Técnica de apoio à pesquisa, ensino, extensão e inovação para executar ações integradas de inclusão produtiva, formação cultural, comunicação social e desenvolvimento territorial sustentável.</textarea>
+                                <textarea id="objetoDespesa" rows="3" class="form-input resize-y" placeholder="Descreva o objeto da despesa..." required></textarea>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label class="form-label" for="empresa">EMPRESA:</label>
-                                    <input type="text" id="empresa" class="form-input" value="Fundação Cultural e de Fomento à Pesquisa, Ensino, Extensão e Inovação - Fadex." required>
+                                    <input type="text" id="empresa" class="form-input" value="" placeholder="Nome da empresa/favorecido" required>
                                 </div>
                                 <div>
                                     <label class="form-label" for="cnpj">CNJP / CPF / UG:</label>
-                                    <input type="text" id="cnpj" class="form-input" value="07.501.328/0001-30" required>
+                                    <input type="text" id="cnpj" class="form-input" value="" placeholder="00.000.000/0000-00" required>
                                 </div>
                                 <div>
-                                    <label class="form-label" for="unidade">UNIDADE (UGR):</label>
-                                    <input type="text" id="unidade" class="form-input" value="158128" placeholder="Ex: Reitoria/Campus Avançado" required>
+                                    <label class="form-label" for="unidade">UNIDADE (UASG):</label>
+                                    <input type="text" id="unidade" class="form-input" value="" placeholder="Ex: Reitoria/Campus Avançado" required>
                                 </div>
                                 <div>
                                     <label class="form-label" for="processo">PROCESSO ORIGEM:</label>
-                                    <input type="text" id="processo" class="form-input" value="23249.032747.2026-67" required>
+                                    <input type="text" id="processo" class="form-input" value="" placeholder="Ex: 23249.000000.2026-00" required>
                                 </div>
-                            </div>
-                            <div>
-                                <label class="form-label" for="projetoEstrategico">PROJETO ESTRATÉGICO:</label>
-                                <input type="text" id="projetoEstrategico" class="form-input" value="" placeholder="Opcional">
+                                <div>
+                                    <label class="form-label" for="linkProcesso">LINK DO PROCESSO:</label>
+                                    <input type="url" id="linkProcesso" class="form-input" value="" placeholder="https://exemplo.com/processo">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="projetoEstrategico">PROJETO ESTRATÉGICO:</label>
+                                    <input type="text" id="projetoEstrategico" class="form-input" value="" placeholder="Opcional">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -237,7 +241,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-5">
                                 <div>
                                     <label class="form-label" for="uasg">UASG DA LICITAÇÃO:</label>
-                                    <input type="text" id="uasg" class="form-input" value="158128">
+                                    <input type="text" id="uasg" class="form-input" value="" placeholder="Ex: 158128">
                                 </div>
                                 <div>
                                     <label class="form-label" for="atoNormativo">ATO NORMATIVO Nº:</label>
@@ -249,7 +253,8 @@
                                         <label class="form-label" for="modalidade">MODALIDADE DA LICITAÇÃO:</label>
                                         <div class="relative">
                                             <select id="modalidade" class="form-input appearance-none pr-10 bg-slate-50 cursor-pointer">
-                                                <option value="Dispensa de licitação" selected>Dispensa de licitação</option>
+                                                <option value="" selected>Selecione a modalidade...</option>
+                                                <option value="Dispensa de licitação">Dispensa de licitação</option>
                                                 <option value="Inexigibilidade">Inexigibilidade</option>
                                                 <option value="Pregão Eletrônico">Pregão Eletrônico</option>
                                                 <option value="Pregão Eletrônico SRP">Pregão Eletrônico SRP</option>
@@ -263,7 +268,7 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="form-label" for="artigo">ARTIGO:</label>
-                                            <input type="text" id="artigo" class="form-input" value="Art. 72 e 75">
+                                            <input type="text" id="artigo" class="form-input" value="" placeholder="Ex: Art. 72 e 75">
                                         </div>
                                         <div>
                                             <label class="form-label" for="paragrafo">PARÁGRAFO:</label>
@@ -276,7 +281,7 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="form-label" for="inciso">INCISO:</label>
-                                            <input type="text" id="inciso" class="form-input" value="XV">
+                                            <input type="text" id="inciso" class="form-input" value="" placeholder="Ex: XV">
                                         </div>
                                         <div>
                                             <label class="form-label" for="alinea">ALÍNEA:</label>
@@ -286,7 +291,7 @@
                                     <div class="grid grid-cols-2 gap-3">
                                          <div>
                                             <label class="form-label" for="numLicitacao">Nº LICITAÇÃO:</label>
-                                            <input type="text" id="numLicitacao" class="form-input" value="133/2026">
+                                            <input type="text" id="numLicitacao" class="form-input" value="" placeholder="Ex: 133/2026">
                                         </div>
                                         <div>
                                             <label class="form-label" for="numContrato">Nº CONTRATO:</label>
@@ -334,7 +339,7 @@
                                     </div>
                                     <div class="col-span-12 sm:col-span-9 lg:col-span-10">
                                         <label class="form-label">Descrição</label>
-                                        <input type="text" class="form-input item-descricao" value="Projeto Colaboração Técnica de apoio à pesquisa..." required>
+                                        <input type="text" class="form-input item-descricao" value="" placeholder="Descreva o item..." required>
                                     </div>
                                     
                                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
@@ -343,15 +348,15 @@
                                     </div>
                                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                         <label class="form-label">Qtd</label>
-                                        <input type="number" class="form-input item-qtde text-center" value="1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                                        <input type="number" class="form-input item-qtde text-center" value="" placeholder="Ex: 1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
                                     </div>
                                     <div class="col-span-12 sm:col-span-4 lg:col-span-4">
                                         <label class="form-label">V. Unitário (R$)</label>
-                                        <input type="number" class="form-input item-v-unit font-mono" value="1050000.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                                        <input type="number" class="form-input item-v-unit font-mono" value="" placeholder="0.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
                                     </div>
                                     <div class="col-span-12 sm:col-span-12 lg:col-span-4">
                                         <label class="form-label">V. Total (R$)</label>
-                                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="1.050.000,00" readonly>
+                                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -417,7 +422,7 @@
                                     <td id="prev-cnpj"></td>
                                 </tr>
                                 <tr>
-                                    <td class="preview-label">UNIDADE (UGR)<br><span class="font-normal text-xs">(Reitoria/Campus Avançado):</span></td>
+                                    <td class="preview-label">UNIDADE (UASG)<br><span class="font-normal text-xs">(Reitoria/Campus Avançado):</span></td>
                                     <td id="prev-unidade"></td>
                                 </tr>
                                 <tr>
@@ -613,10 +618,16 @@
         // Calculate single row total
         function calcularTotal(element) {
             const row = element.closest('.item-row');
-            const qtde = parseInt(row.querySelector('.item-qtde').value, 10) || 0; // Transformado para Inteiro
-            const vUnit = parseFloat(row.querySelector('.item-v-unit').value) || 0;
-            const total = qtde * vUnit;
-            row.querySelector('.item-v-total').value = formatarMoeda(total);
+            const qtdeInput = row.querySelector('.item-qtde').value;
+            const vUnitInput = row.querySelector('.item-v-unit').value;
+            if (qtdeInput === '' || vUnitInput === '') {
+                row.querySelector('.item-v-total').value = '';
+            } else {
+                const qtde = parseInt(qtdeInput, 10) || 0;
+                const vUnit = parseFloat(vUnitInput) || 0;
+                const total = qtde * vUnit;
+                row.querySelector('.item-v-total').value = formatarMoeda(total);
+            }
             atualizarPreview(); // Trigger preview update immediately
         }
 
@@ -649,15 +660,15 @@
                     </div>
                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                         <label class="form-label">Qtd</label>
-                        <input type="number" class="form-input item-qtde text-center" value="1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                        <input type="number" class="form-input item-qtde text-center" value="" placeholder="Ex: 1" step="1" min="1" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-4">
                         <label class="form-label">V. Unitário (R$)</label>
-                        <input type="number" class="form-input item-v-unit font-mono" value="0.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
+                        <input type="number" class="form-input item-v-unit font-mono" value="" placeholder="0.00" step="0.01" onchange="calcularTotal(this)" onkeyup="calcularTotal(this)" required>
                     </div>
                     <div class="col-span-12 sm:col-span-12 lg:col-span-4">
                         <label class="form-label">V. Total (R$)</label>
-                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="0,00" readonly>
+                        <input type="text" class="form-input item-v-total bg-slate-100 font-mono font-semibold text-slate-700" value="" readonly>
                     </div>
                 </div>
             `;
@@ -701,7 +712,7 @@
             // Mapping [Input ID, Preview ID]
             const idMap = [
                 ['objetoDespesa', 'prev-objeto'], ['empresa', 'prev-empresa'], ['cnpj', 'prev-cnpj'],
-                ['unidade', 'prev-unidade'], ['processo', 'prev-processo'], ['projetoEstrategico', 'prev-projeto'],
+                ['unidade', 'prev-unidade'], ['projetoEstrategico', 'prev-projeto'],
                 ['uasg', 'prev-uasg'], ['atoNormativo', 'prev-ato'], ['artigo', 'prev-artigo'],
                 ['modalidade', 'prev-modalidade'], ['paragrafo', 'prev-paragrafo'], ['inciso', 'prev-inciso'],
                 ['alinea', 'prev-alinea'], ['numLicitacao', 'prev-numLicitacao'], ['numContrato', 'prev-numContrato'],
@@ -717,6 +728,20 @@
                 }
             });
 
+            // Sync Processo and Link
+            const processoVal = document.getElementById('processo')?.value || '';
+            const linkInputEl = document.getElementById('linkProcesso');
+            const linkVal = (linkInputEl ? linkInputEl.value : '').trim();
+            const prevProcessoEl = document.getElementById('prev-processo');
+            if (prevProcessoEl) {
+                if (linkVal && processoVal) {
+                    const formattedUrl = (linkVal.startsWith('http://') || linkVal.startsWith('https://')) ? linkVal : `https://${linkVal}`;
+                    prevProcessoEl.innerHTML = `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-semibold inline-flex items-center gap-1" title="Abrir link do processo">${processoVal} <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>`;
+                } else {
+                    prevProcessoEl.innerText = processoVal;
+                }
+            }
+
             // Sync Items Table
             const tbody = document.getElementById('prev-itens-tbody');
             tbody.innerHTML = ''; 
@@ -729,8 +754,9 @@
                 const desc = row.querySelector('.item-descricao').value;
                 const und = row.querySelector('.item-und').value;
                 const qtde = row.querySelector('.item-qtde').value;
+                const vUnitVal = row.querySelector('.item-v-unit').value;
                 
-                const valUnitRaw = parseFloat(row.querySelector('.item-v-unit').value) || 0;
+                const valUnitRaw = parseFloat(vUnitVal) || 0;
                 const valTotalRaw = valUnitRaw * parseInt(qtde || 0, 10); // Transformado para Inteiro no Preview
                 totalGeral += valTotalRaw;
 
@@ -740,8 +766,8 @@
                     <td>${desc}</td>
                     <td class="text-center">${und}</td>
                     <td class="text-center">${qtde}</td>
-                    <td class="text-right whitespace-nowrap">R$ ${formatarMoeda(valUnitRaw)}</td>
-                    <td class="text-right whitespace-nowrap font-medium">R$ ${formatarMoeda(valTotalRaw)}</td>
+                    <td class="text-right whitespace-nowrap">${vUnitVal !== '' ? 'R$ ' + formatarMoeda(valUnitRaw) : ''}</td>
+                    <td class="text-right whitespace-nowrap font-medium">${(vUnitVal !== '' && qtde !== '') ? 'R$ ' + formatarMoeda(valTotalRaw) : ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -751,7 +777,7 @@
                  const trTotal = document.createElement('tr');
                  trTotal.innerHTML = `
                     <td colspan="5" class="text-right font-bold py-2 bg-slate-50">VALOR TOTAL GERAL:</td>
-                    <td class="text-right whitespace-nowrap font-bold bg-slate-50">R$ ${formatarMoeda(totalGeral)}</td>
+                    <td class="text-right whitespace-nowrap font-bold bg-slate-50">${totalGeral > 0 ? 'R$ ' + formatarMoeda(totalGeral) : 'R$ 0,00'}</td>
                  `;
                  tbody.appendChild(trTotal);
             }
@@ -774,12 +800,16 @@
 
             setTimeout(() => {
                 try {
+                    const rawLink = (document.getElementById('linkProcesso')?.value || '').trim();
+                    const linkUrl = rawLink ? ((rawLink.startsWith('http://') || rawLink.startsWith('https://')) ? rawLink : `https://${rawLink}`) : null;
+
                     const data = {
                         objeto: document.getElementById('objetoDespesa').value,
                         empresa: document.getElementById('empresa').value,
                         cnpj: document.getElementById('cnpj').value,
                         unidade: document.getElementById('unidade').value,
                         processo: document.getElementById('processo').value,
+                        linkProcesso: linkUrl,
                         projeto: document.getElementById('projetoEstrategico').value,
                         uasg: document.getElementById('uasg').value,
                         atoNormativo: document.getElementById('atoNormativo').value,
@@ -827,21 +857,33 @@
                     doc.setLineWidth(1);
                     doc.line(pageWidth/2 - 70, margin + 5, pageWidth/2 + 70, margin + 5);
 
+                    const processoCell = { 
+                        content: data.processo, 
+                        colSpan: 3, 
+                        styles: data.linkProcesso ? { textColor: [0, 102, 204], fontStyle: 'bold' } : {},
+                        _linkUrl: data.linkProcesso
+                    };
+
                     // Table 1: Informações
                     const bodyInfo = [
                         [{ content: 'INFORMAÇÕES PARA EMPENHO', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [240, 240, 240] } }],
                         [{ content: 'OBJETO DA DESPESA:', styles: { fontStyle: 'bold', cellWidth: 120 } }, { content: data.objeto, colSpan: 3 }],
                         [{ content: 'EMPRESA:', styles: { fontStyle: 'bold' } }, { content: data.empresa, colSpan: 3 }],
                         [{ content: 'CNJP / CPF / UG:', styles: { fontStyle: 'bold' } }, { content: data.cnpj, colSpan: 3 }],
-                        [{ content: 'UNIDADE (UGR)\n(Reitoria/Campus Avançado):', styles: { fontStyle: 'bold' } }, { content: data.unidade, colSpan: 3 }],
-                        [{ content: 'PROCESSO ORIGEM:', styles: { fontStyle: 'bold' } }, { content: data.processo, colSpan: 3 }],
+                        [{ content: 'UNIDADE (UASG)\n(Reitoria/Campus Avançado):', styles: { fontStyle: 'bold' } }, { content: data.unidade, colSpan: 3 }],
+                        [{ content: 'PROCESSO ORIGEM:', styles: { fontStyle: 'bold' } }, processoCell],
                         [{ content: 'PROJETO ESTRATÉGICO:', styles: { fontStyle: 'bold' } }, { content: data.projeto, colSpan: 3 }]
                     ];
 
                     doc.autoTable({
                         startY: margin + 20,
                         body: bodyInfo,
-                        ...tableStyles
+                        ...tableStyles,
+                        didDrawCell: function (data) {
+                            if (data.cell.raw && data.cell.raw._linkUrl) {
+                                doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: data.cell.raw._linkUrl });
+                            }
+                        }
                     });
 
                     // Table 2: Licitação
@@ -905,7 +947,8 @@
 
                     itemRowsDOM.forEach(row => {
                         const q = row.querySelector('.item-qtde').value;
-                        const vu = parseFloat(row.querySelector('.item-v-unit').value) || 0;
+                        const vUnitVal = row.querySelector('.item-v-unit').value;
+                        const vu = parseFloat(vUnitVal) || 0;
                         const vt = (vu * parseInt(q || 0, 10)); // Transformado para Inteiro no Gerador PDF
                         totalVal += vt;
 
@@ -914,8 +957,8 @@
                             row.querySelector('.item-descricao').value,
                             row.querySelector('.item-und').value,
                             q,
-                            'R$ ' + formatarMoeda(vu),
-                            'R$ ' + formatarMoeda(vt)
+                            vUnitVal !== '' ? 'R$ ' + formatarMoeda(vu) : '',
+                            (vUnitVal !== '' && q !== '') ? 'R$ ' + formatarMoeda(vt) : ''
                         ]);
                     });
                     
